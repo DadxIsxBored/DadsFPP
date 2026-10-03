@@ -1,0 +1,7 @@
+{
+  "name": "DadsFPP",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "First-person perspective with a configurable toggle, eye-level camera, FOV and local head hiding. Built for Valheim 1.0.16.",
+  "dependencies": ["denikson-BepInExPack_Valheim-5.4.2351"]
+}

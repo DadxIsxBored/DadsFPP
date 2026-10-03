@@ -30,7 +30,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
         Enabled = Config.Bind("1 - General", "Enabled", true, "Enable DadsFPP.");
         FirstPerson = Config.Bind("1 - General", "First Person", true, "Use first person. The toggle updates this setting.");
         ToggleKey = Config.Bind("1 - General", "Toggle Perspective", new KeyboardShortcut(KeyCode.F6), "Switch first/third person during gameplay.");
-        FieldOfView = Config.Bind("2 - Camera", "Field of View", 85f, new ConfigDescription("First-person vertical FOV.", new AcceptableValueRange<float>(50f, 110f)));
+        FieldOfView = Config.Bind("2 - Camera", "Field of View", 65f, new ConfigDescription("First-person vertical FOV. Valheim's default is 65 degrees; slider range is 60–110 degrees.", new AcceptableValueRange<float>(60f, 110f)));
         ForwardOffset = Config.Bind("2 - Camera", "Forward Offset", 0.12f, new ConfigDescription("Meters forward from the player's eyes.", new AcceptableValueRange<float>(-0.1f, 0.3f)));
         VerticalOffset = Config.Bind("2 - Camera", "Vertical Offset", 0f, new ConfigDescription("Meters above or below the player's eyes.", new AcceptableValueRange<float>(-0.3f, 0.3f)));
         NearClip = Config.Bind("2 - Camera", "Near Clip", 0.03f, new ConfigDescription("Near clipping plane in meters.", new AcceptableValueRange<float>(0.01f, 0.15f)));

@@ -4,6 +4,8 @@ First-person perspective for Valheim 1.0.16 and BepInExPack 5.4.2351.
 
 Press **F6** to switch between first and third person. First person starts enabled. Change the toggle, FOV, eye offset and clipping plane in `BepInEx/config/com.dadisbored.dadsfpp.cfg`. DadsBepInExModManager 1.1.1 supports recording the toggle key; it is optional.
 
+The Field of View slider starts at Valheim's default **65 degrees** and supports **60–110 degrees**. Changes apply immediately in first person. An existing configured value is retained.
+
 Uses Valheim's existing aiming, movement, combat and camera rotation. Your head, helmet, beard and hair are hidden only while the world camera renders. Your body and equipped items remain present. This uses existing third-person animations rather than new first-person weapon animations.
 
 The normal camera is used for inventory previews, death, teleportation, cutscenes, attached seats and free-fly devcommands. Switching back restores camera optics and local visibility. Toggle input is ignored while interacting with menus or text fields.

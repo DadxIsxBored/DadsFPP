@@ -11,7 +11,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.dadisbored.dadsfpp";
     public const string PluginName = "DadsFPP";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
     internal static DadsFPPPlugin? Instance;
     internal static ConfigEntry<bool> Enabled = null!;
     internal static ConfigEntry<bool> FirstPerson = null!;

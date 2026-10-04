@@ -17,4 +17,6 @@ Before publishing, check in-game:
 
 Initial compilation succeeds. Automated API and reflection checks accompany the build. Gameplay, multiplayer and rendering behavior cannot be certified without running these scenarios inside Valheim.
 
-Automated result: zero build warnings/errors, 13 passing original-game metadata checks, and no missing game references or invalid Harmony patch targets. Run `dotnet run --project tests/ApiChecks/ApiChecks.csproj -- <plugin-dll> <game-managed-directory> <bepinex-core-directory>` to repeat the metadata checks. The checks use Mono.Cecil rather than executing Unity assemblies on the desktop .NET runtime.
+Tool grip framing is checked across 48 combinations of hand position, field of view and aspect ratio, including the Dad profile's 90.02386-degree FOV. Each resting grip must project into the lower camera view and remain ahead of the clipping plane.
+
+Automated result: zero build warnings/errors, 17 passing original-game metadata checks, and no missing game references or invalid Harmony patch targets. Run `dotnet run --project tests/ApiChecks/ApiChecks.csproj -- <plugin-dll> <game-managed-directory> <bepinex-core-directory>` to repeat the metadata checks. The checks use Mono.Cecil rather than executing Unity assemblies on the desktop .NET runtime.

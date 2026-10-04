@@ -10,6 +10,8 @@ Uses Valheim's existing aiming, movement, combat and camera rotation. Your anima
 
 Under Visibility, **Show Arms and Weapons** enables this positioning. **Arm View Offset** adjusts the rendered position in meters: X right, Y up, Z forward. The original arm pose is restored after rendering so gameplay, third person and inventory previews use the normal character pose.
 
+The equipped tool's resting hand grip is positioned within the lower part of the first-person view. During attacks, blocking and bow draws, its animation moves from that position. The tool model stays attached to the character's hand.
+
 The normal camera is used for inventory previews, death, teleportation, cutscenes, attached seats and free-fly devcommands. Switching back restores camera optics and local visibility. Toggle input is ignored while interacting with menus or text fields.
 
 Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into Thunderstore Mod Manager. Install on clients; servers do not need the plugin.
@@ -18,4 +20,4 @@ Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into T
 
 Run `powershell -File build.ps1 -Package`. Override `ValheimManagedPath` and `BepInExCorePath` as environment variables for a different installation. The ZIP and unpacked folder are created under `dist/`; previous artifacts move to `Archive/package-builds/`. Neither folder belongs in Git.
 
-Status: 1.1.0 build. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.
+Status: 1.1.1 build. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.

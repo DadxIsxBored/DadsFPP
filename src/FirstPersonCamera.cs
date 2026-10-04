@@ -10,6 +10,8 @@ namespace DadsFPP;
 internal sealed class FirstPersonCamera
 {
     private static readonly FieldInfo HeadField = AccessTools.Field(typeof(Character), "m_head");
+    private static readonly FieldInfo LeftHeldItemField = AccessTools.Field(typeof(VisEquipment), "m_leftItemInstance");
+    private static readonly FieldInfo RightHeldItemField = AccessTools.Field(typeof(VisEquipment), "m_rightItemInstance");
     private static readonly FieldInfo[] AttachmentFields = {
         AccessTools.Field(typeof(VisEquipment), "m_helmetItemInstance"),
         AccessTools.Field(typeof(VisEquipment), "m_hairItemInstance"),
@@ -18,6 +20,9 @@ internal sealed class FirstPersonCamera
     private readonly Dictionary<Renderer, bool> _hidden = new Dictionary<Renderer, bool>();
     private readonly Dictionary<Transform, ArmPose> _armPoses = new Dictionary<Transform, ArmPose>();
     private readonly Dictionary<SkinnedMeshRenderer, bool> _skinUpdates = new Dictionary<SkinnedMeshRenderer, bool>();
+    private readonly HashSet<Camera> _suspendedCameras = new HashSet<Camera>();
+    private GameObject? _heldItem;
+    private Vector3 _gripAdjustment;
     private Animator? _animator;
     private AnimatorCullingMode _originalCullingMode;
     private Transform? _leftArm;
@@ -103,6 +108,7 @@ internal sealed class FirstPersonCamera
         camera.fieldOfView = DadsFPPPlugin.FieldOfView.Value;
         camera.nearClipPlane = DadsFPPPlugin.NearClip.Value;
         if (_skyCamera != null) _skyCamera.fieldOfView = camera.fieldOfView;
+        UpdateToolGrip(camera, player);
     }
 
     internal void Restore()
@@ -121,6 +127,9 @@ internal sealed class FirstPersonCamera
         _armPlayer = null;
         _leftArm = null;
         _rightArm = null;
+        _heldItem = null;
+        _gripAdjustment = Vector3.zero;
+        _suspendedCameras.Clear();
     }
 
     private void BeforePipelineRender(ScriptableRenderContext context, Camera camera) => BeforeRender(camera);
@@ -128,6 +137,15 @@ internal sealed class FirstPersonCamera
 
     private void BeforeRender(Camera camera)
     {
+        if (camera != _camera)
+        {
+            if (_armPoses.Count > 0 || _hiddenHead != null || _hidden.Count > 0)
+            {
+                RestoreVisibility();
+                _suspendedCameras.Add(camera);
+            }
+            return;
+        }
         RestoreVisibility();
         if (camera != _camera || _player == null) return;
         VisEquipment equipment = _player.GetVisEquipment();
@@ -143,7 +161,7 @@ internal sealed class FirstPersonCamera
             // pose, so swings, bow draws, blocking and tool use remain animated.
             Quaternion viewRotation = Quaternion.FromToRotation(_player.transform.forward, camera.transform.forward);
             Vector3 eyePoint = _player.GetEyePoint();
-            Vector3 offset = camera.transform.TransformDirection(DadsFPPPlugin.ArmViewOffset.Value);
+            Vector3 offset = camera.transform.TransformDirection(DadsFPPPlugin.ArmViewOffset.Value + _gripAdjustment);
             PoseArm(_leftArm, eyePoint, viewRotation, offset);
             PoseArm(_rightArm, eyePoint, viewRotation, offset);
         }
@@ -171,6 +189,41 @@ internal sealed class FirstPersonCamera
     private void AfterRender(Camera camera)
     {
         if (camera == _camera) RestoreVisibility();
+        else if (_suspendedCameras.Remove(camera) && _camera != null) BeforeRender(_camera);
+    }
+
+    private void UpdateToolGrip(Camera camera, Player player)
+    {
+        VisEquipment equipment = player.GetVisEquipment();
+        if (!DadsFPPPlugin.ShowArmsAndWeapons.Value || equipment == null)
+        {
+            _heldItem = null;
+            _gripAdjustment = Vector3.zero;
+            return;
+        }
+        GameObject? rightItem = RightHeldItemField.GetValue(equipment) as GameObject;
+        GameObject? leftItem = LeftHeldItemField.GetValue(equipment) as GameObject;
+        GameObject? heldItem = rightItem != null && rightItem.activeInHierarchy ? rightItem : leftItem;
+        Transform? hand = heldItem == rightItem ? equipment.m_rightHand : equipment.m_leftHand;
+        if (heldItem == null || !heldItem.activeInHierarchy || hand == null)
+        {
+            _heldItem = null;
+            _gripAdjustment = Vector3.zero;
+            return;
+        }
+        bool changedItem = _heldItem != heldItem;
+        _heldItem = heldItem;
+        // Calibrate against the actual tool grip at rest, then keep this offset
+        // through the action so animated swings and draws retain their motion.
+        if (!changedItem && (player.InAttack() || player.IsBlocking() || player.IsDrawingBow() || player.InDodge())) return;
+        Quaternion viewRotation = Quaternion.FromToRotation(player.transform.forward, camera.transform.forward);
+        Vector3 eyePoint = player.GetEyePoint();
+        Vector3 grip = camera.transform.InverseTransformPoint(eyePoint + viewRotation * (hand.position - eyePoint)) +
+            DadsFPPPlugin.ArmViewOffset.Value;
+        ToolGripFraming.Fit(grip.x, grip.y, grip.z, camera.fieldOfView, camera.aspect,
+            out float visibleX, out float visibleY, out float visibleZ);
+        Vector3 visibleGrip = new Vector3(visibleX, visibleY, visibleZ);
+        _gripAdjustment = visibleGrip - grip;
     }
 
     private static Transform? FindUpperArm(Transform? hand)

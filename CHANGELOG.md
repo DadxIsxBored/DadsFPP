@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Frame the actual equipped tool's hand grip in the first-person view instead of relying solely on fixed arm offsets.
+- Preserve animated swings, blocking and bow draws after positioning the resting grip.
+- Restore the world-camera pose after nested auxiliary cameras render.
+
 ## 1.1.0
 
 - Align animated arms, weapons and shields with the first-person camera so combat and tool actions remain visible while looking up or down.

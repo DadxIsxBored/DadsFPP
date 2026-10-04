@@ -68,5 +68,21 @@ internal static class Program
         Assert(visibilityPrefix.Parameters.Any(p => p.ParameterType.FullName == "System.Boolean&") &&
             visibilityPrefix.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "IsActiveFor"),
             "Visibility prefix modifies the hide request through the active-player guard");
+        var eyePoint = controller.Methods.Single(m => m.Name == "GetFirstPersonEyePoint").Body.Instructions;
+        Assert(eyePoint.Any(i => i.Operand is FieldReference f && f.Name == "HeadField") &&
+            eyePoint.Any(i => i.Operand is MethodReference m && m.Name == "get_position") &&
+            eyePoint.Any(i => i.OpCode.Code == Mono.Cecil.Cil.Code.Ldc_R4 && Equals(i.Operand, 0.14f)),
+            "First-person eye position follows the animated head with the Player prefab eye-height offset");
+        foreach (string name in new[] { "Update", "BeforeRender" })
+        {
+            var instructions = controller.Methods.Single(m => m.Name == name).Body.Instructions;
+            int positionIndex = instructions.ToList().FindIndex(i => i.Operand is MethodReference m && m.Name == "PositionAtEyes");
+            int hideIndex = instructions.ToList().FindIndex(i => i.Operand is MethodReference m && m.Name == "HideHeadForCamera");
+            Assert(positionIndex >= 0 && hideIndex > positionIndex,
+                name + " positions the camera at the live eyes before hiding the head");
+        }
+        Assert(new[] { "BeforeRender", "UpdateToolGrip" }.All(name => controller.Methods.Single(m => m.Name == name)
+            .Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "GetFirstPersonEyePoint")),
+            "Arm rendering and tool framing use the same animated eye anchor as the camera");
     }
 }

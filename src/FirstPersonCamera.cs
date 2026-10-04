@@ -108,8 +108,7 @@ internal sealed class FirstPersonCamera
         }
         // Vanilla still calculates rotation, aiming, input and camera shake.
         // Only replace its trailing third-person position and optical settings.
-        gameCamera.transform.position = player.GetEyePoint() +
-            gameCamera.transform.forward * DadsFPPPlugin.ForwardOffset.Value + Vector3.up * DadsFPPPlugin.VerticalOffset.Value;
+        PositionAtEyes(camera, player);
         camera.fieldOfView = DadsFPPPlugin.FieldOfView.Value;
         camera.nearClipPlane = DadsFPPPlugin.NearClip.Value;
         if (_skyCamera != null) _skyCamera.fieldOfView = camera.fieldOfView;
@@ -117,6 +116,7 @@ internal sealed class FirstPersonCamera
         // camera is within two meters, which also fades held tools away.
         SetCharacterVisible(player, true);
         UpdateToolGrip(camera, player);
+        HideHeadForCamera(player, player.GetVisEquipment());
     }
 
     internal void Restore()
@@ -156,6 +156,9 @@ internal sealed class FirstPersonCamera
         }
         RestoreVisibility();
         if (camera != _camera || _player == null) return;
+        // Sample the final animated head position immediately before culling.
+        PositionAtEyes(camera, _player);
+        UpdateToolGrip(camera, _player);
         VisEquipment equipment = _player.GetVisEquipment();
         if (DadsFPPPlugin.ShowArmsAndWeapons.Value && equipment != null)
         {
@@ -168,13 +171,34 @@ internal sealed class FirstPersonCamera
             // Use the live animated bones. Their held equipment follows the same
             // pose, so swings, bow draws, blocking and tool use remain animated.
             Quaternion viewRotation = Quaternion.FromToRotation(_player.transform.forward, camera.transform.forward);
-            Vector3 eyePoint = _player.GetEyePoint();
+            Vector3 eyePoint = GetFirstPersonEyePoint(_player);
             Vector3 offset = camera.transform.TransformDirection(DadsFPPPlugin.ArmViewOffset.Value + _gripAdjustment);
             PoseArm(_leftArm, eyePoint, viewRotation, offset);
             PoseArm(_rightArm, eyePoint, viewRotation, offset);
         }
+        HideHeadForCamera(_player, equipment);
+    }
+
+    private static Vector3 GetFirstPersonEyePoint(Player player)
+    {
+        Transform? head = HeadField.GetValue(player) as Transform;
+        // The Player prefab's EyePos is a root child, not an animated eye bone.
+        // Its rest position is 0.13844 m above Head. Track the animated head
+        // translation while preserving the game's independent look rotation.
+        return head != null ? head.position + player.transform.up * 0.14f : player.GetEyePoint();
+    }
+
+    private static void PositionAtEyes(Camera camera, Player player)
+    {
+        camera.transform.position = GetFirstPersonEyePoint(player) +
+            camera.transform.forward * DadsFPPPlugin.ForwardOffset.Value +
+            Vector3.up * DadsFPPPlugin.VerticalOffset.Value;
+    }
+
+    private void HideHeadForCamera(Player player, VisEquipment? equipment)
+    {
         if (!DadsFPPPlugin.HideHead.Value) return;
-        _hiddenHead = HeadField.GetValue(_player) as Transform;
+        _hiddenHead = HeadField.GetValue(player) as Transform;
         if (_hiddenHead != null)
         {
             _headScale = _hiddenHead.localScale;
@@ -225,7 +249,7 @@ internal sealed class FirstPersonCamera
         // through the action so animated swings and draws retain their motion.
         if (!changedItem && (player.InAttack() || player.IsBlocking() || player.IsDrawingBow() || player.InDodge())) return;
         Quaternion viewRotation = Quaternion.FromToRotation(player.transform.forward, camera.transform.forward);
-        Vector3 eyePoint = player.GetEyePoint();
+        Vector3 eyePoint = GetFirstPersonEyePoint(player);
         Vector3 grip = camera.transform.InverseTransformPoint(eyePoint + viewRotation * (hand.position - eyePoint)) +
             DadsFPPPlugin.ArmViewOffset.Value;
         ToolGripFraming.Fit(grip.x, grip.y, grip.z, camera.fieldOfView, camera.aspect,

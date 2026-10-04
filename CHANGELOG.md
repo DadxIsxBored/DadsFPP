@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3
+
+- Follow the animated head instead of the static root eye marker when positioning the first-person camera.
+- Refresh the eye position and tool framing before the world camera renders, including during movement.
+- Apply head hiding during the camera update as well as rendering so skinning can observe it before culling.
+
 ## 1.1.2
 
 - Prevent Valheim's camera-distance visibility update from fading the local player and held tools away during first person.

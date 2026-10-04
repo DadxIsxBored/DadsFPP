@@ -22,4 +22,4 @@ Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into T
 
 Run `powershell -File build.ps1 -Package`. Override `ValheimManagedPath` and `BepInExCorePath` as environment variables for a different installation. The ZIP and unpacked folder are created under `dist/`; previous artifacts move to `Archive/package-builds/`. Neither folder belongs in Git.
 
-Status: 1.1.2 build. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.
+Status: 1.1.3 build. The camera follows the animated head and refreshes its position before rendering. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.

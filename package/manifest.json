@@ -1,6 +1,6 @@
 {
   "name": "DadsFPP",
-  "version_number": "1.1.1",
+  "version_number": "1.1.2",
   "website_url": "",
   "description": "First-person perspective with visible animated arms and held weapons, configurable camera settings and local head hiding. Built for Valheim 1.0.16.",
   "dependencies": ["denikson-BepInExPack_Valheim-5.4.2351"]

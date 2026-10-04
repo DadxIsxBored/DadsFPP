@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+- Prevent Valheim's camera-distance visibility update from fading the local player and held tools away during first person.
+- Restore player visibility immediately when entering first person; retain head hiding during the world camera render.
+
 ## 1.1.1
 
 - Frame the actual equipped tool's hand grip in the first-person view instead of relying solely on fixed arm offsets.

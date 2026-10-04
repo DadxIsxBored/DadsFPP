@@ -51,5 +51,22 @@ internal static class Program
             .Where(f => f.DeclaringType.FullName == "VisEquipment")
             .All(f => equipment.Fields.Any(original => original.Name == f.Name && original.IsPublic)),
             "Private visual attachments are not accessed directly");
+        var character = game.MainModule.GetType("Character");
+        var setVisible = character.Methods.Single(m => m.Name == "SetVisible" && m.Parameters.Count == 1);
+        Assert(setVisible.Parameters[0].ParameterType.FullName == "System.Boolean" && setVisible.ReturnType.FullName == "System.Void",
+            "SetVisible(bool) visibility patch target resolves");
+        var fixedUpdate = game.MainModule.GetType("Player").Methods.Single(m => m.Name == "FixedUpdate").Body.Instructions;
+        Assert(fixedUpdate.Any(i => i.OpCode.Code == Mono.Cecil.Cil.Code.Ldc_R4 && Equals(i.Operand, 2f)) &&
+            fixedUpdate.Any(i => i.Operand is MethodReference m && m.FullName == setVisible.FullName &&
+                i.Previous.OpCode.Code == Mono.Cecil.Cil.Code.Ldc_I4_0),
+            "Installed player update requests invisibility inside the two-meter camera boundary");
+        Assert(setVisible.Body.Instructions.Any(i => i.Operand is MethodReference m &&
+            m.DeclaringType.FullName == "UnityEngine.LODGroup" && m.Name == "set_localReferencePoint"),
+            "Camera hide request changes the character LOD reference point");
+        Assert(initializers.Any(i => Equals(i.Operand, "SetVisible")), "Controller resolves visibility restoration through the original private method");
+        var visibilityPrefix = plugin.MainModule.GetType("DadsFPP.CharacterVisibilityPatch").Methods.Single(m => m.Name == "Prefix");
+        Assert(visibilityPrefix.Parameters.Any(p => p.ParameterType.FullName == "System.Boolean&") &&
+            visibilityPrefix.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "IsActiveFor"),
+            "Visibility prefix modifies the hide request through the active-player guard");
     }
 }

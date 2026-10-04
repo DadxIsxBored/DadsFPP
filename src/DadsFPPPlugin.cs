@@ -11,7 +11,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.dadisbored.dadsfpp";
     public const string PluginName = "DadsFPP";
-    public const string PluginVersion = "1.1.1";
+    public const string PluginVersion = "1.1.2";
     internal static DadsFPPPlugin? Instance;
     internal static ConfigEntry<bool> Enabled = null!;
     internal static ConfigEntry<bool> FirstPerson = null!;
@@ -75,5 +75,14 @@ internal static class CameraUpdatePatch
     private static void Postfix(GameCamera __instance, Camera ___m_camera, bool ___m_freeFly)
     {
         DadsFPPPlugin.Instance?.Controller.Update(__instance, ___m_camera, Player.m_localPlayer, ___m_freeFly);
+    }
+}
+
+[HarmonyPatch(typeof(Character), "SetVisible", new[] { typeof(bool) })]
+internal static class CharacterVisibilityPatch
+{
+    private static void Prefix(Character __instance, ref bool __0)
+    {
+        if (DadsFPPPlugin.Instance?.Controller.IsActiveFor(__instance) == true) __0 = true;
     }
 }

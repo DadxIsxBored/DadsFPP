@@ -10,6 +10,8 @@ namespace DadsFPP;
 internal sealed class FirstPersonCamera
 {
     private static readonly FieldInfo HeadField = AccessTools.Field(typeof(Character), "m_head");
+    private static readonly Action<Character, bool> SetCharacterVisible = AccessTools.MethodDelegate<Action<Character, bool>>(
+        AccessTools.Method(typeof(Character), "SetVisible", new[] { typeof(bool) }));
     private static readonly FieldInfo LeftHeldItemField = AccessTools.Field(typeof(VisEquipment), "m_leftItemInstance");
     private static readonly FieldInfo RightHeldItemField = AccessTools.Field(typeof(VisEquipment), "m_rightItemInstance");
     private static readonly FieldInfo[] AttachmentFields = {
@@ -36,6 +38,9 @@ internal sealed class FirstPersonCamera
     private float _originalNearClip;
     private float _originalFov;
     private float _originalSkyFov;
+
+    internal bool IsActiveFor(Character character) => _camera != null && _player != null &&
+        _player == character && DadsFPPPlugin.Enabled.Value && DadsFPPPlugin.FirstPerson.Value;
 
     private readonly struct ArmPose
     {
@@ -108,6 +113,9 @@ internal sealed class FirstPersonCamera
         camera.fieldOfView = DadsFPPPlugin.FieldOfView.Value;
         camera.nearClipPlane = DadsFPPPlugin.NearClip.Value;
         if (_skyCamera != null) _skyCamera.fieldOfView = camera.fieldOfView;
+        // Player.FixedUpdate normally hides the entire LOD group when the
+        // camera is within two meters, which also fades held tools away.
+        SetCharacterVisible(player, true);
         UpdateToolGrip(camera, player);
     }
 

@@ -11,7 +11,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.dadisbored.dadsfpp";
     public const string PluginName = "DadsFPP";
-    public const string PluginVersion = "1.1.3";
+    public const string PluginVersion = "1.1.4";
     internal static DadsFPPPlugin? Instance;
     internal static ConfigEntry<bool> Enabled = null!;
     internal static ConfigEntry<bool> FirstPerson = null!;
@@ -25,6 +25,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
     internal static ConfigEntry<Vector3> ArmViewOffset = null!;
     private Harmony? _harmony;
     internal readonly FirstPersonCamera Controller = new FirstPersonCamera();
+    internal readonly HealthReadout HealthNumbers = new HealthReadout();
 
     private void Awake()
     {
@@ -54,6 +55,8 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
         FirstPerson.Value = !FirstPerson.Value;
         if (!FirstPerson.Value) Controller.Restore();
     }
+
+    private void OnGUI() => HealthNumbers.Draw(Controller);
 
     internal static bool GameplayInputAvailable() => Cursor.lockState == CursorLockMode.Locked &&
         !InventoryGui.IsVisible() && !Menu.IsVisible() && !Console.IsVisible() &&

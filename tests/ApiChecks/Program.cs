@@ -84,5 +84,19 @@ internal static class Program
         Assert(new[] { "BeforeRender", "UpdateToolGrip" }.All(name => controller.Methods.Single(m => m.Name == name)
             .Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == "GetFirstPersonEyePoint")),
             "Arm rendering and tool framing use the same animated eye anchor as the camera");
+        var applyDamage = character.Methods.Single(m => m.Name == "ApplyDamage");
+        Assert(applyDamage.Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] {
+            "HitData", "System.Boolean", "System.Boolean", "HitData/DamageModifier" }),
+            "Health readout damage patch signature matches the installed game");
+        var heal = character.Methods.Single(m => m.Name == "RPC_Heal");
+        Assert(heal.Parameters.Select(p => p.ParameterType.FullName).SequenceEqual(new[] {
+            "System.Int64", "System.Single", "System.Boolean" }),
+            "Health readout healing patch signature matches the installed game");
+        Assert(new[] { applyDamage, heal }.All(method => method.Body.Instructions.Any(i =>
+            i.Operand is MethodReference m && m.Name == "SetHealth" && m.DeclaringType.FullName == "Character")),
+            "Damage and healing patch targets apply health before their postfix runs");
+        Assert(game.MainModule.GetType("Hud").Methods.Any(m => m.Name == "IsVisible" && m.IsPublic &&
+            !m.IsStatic && m.Parameters.Count == 0 && m.ReturnType.FullName == "System.Boolean"),
+            "HUD visibility method for the health readout resolves");
     }
 }

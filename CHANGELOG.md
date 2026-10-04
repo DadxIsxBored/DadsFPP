@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.4
+
+- Raise the first-person camera by 20 centimeters, in addition to the configured vertical offset, for upper-torso clearance when looking behind.
+- Show damage taken and healing in a square at the middle right of the screen during first person.
+- Display up to three recent health changes for four seconds, with red damage and green healing numbers.
+- Read actual health changes after damage reduction and healing limits; exclude other characters and unchanged health.
+
 ## 1.1.3
 
 - Follow the animated head instead of the static root eye marker when positioning the first-person camera.

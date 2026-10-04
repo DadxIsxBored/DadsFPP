@@ -192,7 +192,9 @@ internal sealed class FirstPersonCamera
     {
         camera.transform.position = GetFirstPersonEyePoint(player) +
             camera.transform.forward * DadsFPPPlugin.ForwardOffset.Value +
-            Vector3.up * DadsFPPPlugin.VerticalOffset.Value;
+            // Apply the height lift even when an existing profile has a zero
+            // vertical offset. Keep it independent of look pitch and yaw.
+            Vector3.up * (0.2f + DadsFPPPlugin.VerticalOffset.Value);
     }
 
     private void HideHeadForCamera(Player player, VisEquipment? equipment)

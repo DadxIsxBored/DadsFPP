@@ -11,7 +11,7 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.dadisbored.dadsfpp";
     public const string PluginName = "DadsFPP";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
     internal static DadsFPPPlugin? Instance;
     internal static ConfigEntry<bool> Enabled = null!;
     internal static ConfigEntry<bool> FirstPerson = null!;
@@ -21,6 +21,8 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
     internal static ConfigEntry<float> VerticalOffset = null!;
     internal static ConfigEntry<float> NearClip = null!;
     internal static ConfigEntry<bool> HideHead = null!;
+    internal static ConfigEntry<bool> ShowArmsAndWeapons = null!;
+    internal static ConfigEntry<Vector3> ArmViewOffset = null!;
     private Harmony? _harmony;
     internal readonly FirstPersonCamera Controller = new FirstPersonCamera();
 
@@ -35,6 +37,8 @@ public sealed class DadsFPPPlugin : BaseUnityPlugin
         VerticalOffset = Config.Bind("2 - Camera", "Vertical Offset", 0f, new ConfigDescription("Meters above or below the player's eyes.", new AcceptableValueRange<float>(-0.3f, 0.3f)));
         NearClip = Config.Bind("2 - Camera", "Near Clip", 0.03f, new ConfigDescription("Near clipping plane in meters.", new AcceptableValueRange<float>(0.01f, 0.15f)));
         HideHead = Config.Bind("3 - Visibility", "Hide Head", true, "Hide your head, hair, beard and helmet for the world camera only. Equipment remains equipped.");
+        ShowArmsAndWeapons = Config.Bind("3 - Visibility", "Show Arms and Weapons", true, "Align your animated arms and held weapons with the first-person view during rendering.");
+        ArmViewOffset = Config.Bind("3 - Visibility", "Arm View Offset", new Vector3(0f, 0.35f, 0.45f), "Render offset for animated arms and held equipment in meters: X right, Y up, Z forward. Applies only to the first-person camera.");
         Controller.Subscribe();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll(typeof(DadsFPPPlugin).Assembly);

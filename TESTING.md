@@ -12,7 +12,9 @@ Before publishing, check in-game:
 6. Equip several helmets, change hair/beard, and toggle Hide Head. Verify other players still see the normal character.
 7. Die and respawn, teleport, sit on a chair and use ship controls. Vanilla camera should handle these states, with first person restored when eligible.
 8. Enable and disable free-fly using devcommands. Disable DadsFPP in configuration and verify optics and visibility restore.
+9. Swing a one-handed weapon, use a two-handed weapon, draw and release a bow, block with a shield, and use the hammer, hoe and pickaxe. Check animated hands and equipment at level aim and while looking up and down.
+10. Toggle Show Arms and Weapons and adjust Arm View Offset. Check third-person arms and the inventory preview retain their original poses after each change.
 
 Initial compilation succeeds. Automated API and reflection checks accompany the build. Gameplay, multiplayer and rendering behavior cannot be certified without running these scenarios inside Valheim.
 
-Automated result: zero build warnings/errors, 11 passing original-game metadata checks, and no missing game references or invalid Harmony patch targets. Run `dotnet run --project tests/ApiChecks/ApiChecks.csproj -- <plugin-dll> <game-managed-directory> <bepinex-core-directory>` to repeat the metadata checks. The checks use Mono.Cecil rather than executing Unity assemblies on the desktop .NET runtime.
+Automated result: zero build warnings/errors, 13 passing original-game metadata checks, and no missing game references or invalid Harmony patch targets. Run `dotnet run --project tests/ApiChecks/ApiChecks.csproj -- <plugin-dll> <game-managed-directory> <bepinex-core-directory>` to repeat the metadata checks. The checks use Mono.Cecil rather than executing Unity assemblies on the desktop .NET runtime.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+- Align animated arms, weapons and shields with the first-person camera so combat and tool actions remain visible while looking up or down.
+- Added Show Arms and Weapons and Arm View Offset settings, enabled by default.
+- Apply the arm pose only while the first-person camera renders and restore the original animation pose afterward.
+- Keep the local player's animation and skin updates active while the first-person camera is enabled; restore previous culling settings on exit.
+
 ## 1.0.0
 
 - Added first-person perspective with an F6 default toggle and configurable shortcut.

@@ -16,6 +16,13 @@ internal sealed class FirstPersonCamera
         AccessTools.Field(typeof(VisEquipment), "m_beardItemInstance")
     };
     private readonly Dictionary<Renderer, bool> _hidden = new Dictionary<Renderer, bool>();
+    private readonly Dictionary<Transform, ArmPose> _armPoses = new Dictionary<Transform, ArmPose>();
+    private readonly Dictionary<SkinnedMeshRenderer, bool> _skinUpdates = new Dictionary<SkinnedMeshRenderer, bool>();
+    private Animator? _animator;
+    private AnimatorCullingMode _originalCullingMode;
+    private Transform? _leftArm;
+    private Transform? _rightArm;
+    private Player? _armPlayer;
     private Camera? _camera;
     private Camera? _skyCamera;
     private Player? _player;
@@ -24,6 +31,18 @@ internal sealed class FirstPersonCamera
     private float _originalNearClip;
     private float _originalFov;
     private float _originalSkyFov;
+
+    private readonly struct ArmPose
+    {
+        internal readonly Vector3 Position;
+        internal readonly Quaternion Rotation;
+
+        internal ArmPose(Transform arm)
+        {
+            Position = arm.localPosition;
+            Rotation = arm.localRotation;
+        }
+    }
 
     internal void Subscribe()
     {
@@ -61,7 +80,22 @@ internal sealed class FirstPersonCamera
             _originalFov = camera.fieldOfView;
             if (_skyCamera != null) _originalSkyFov = _skyCamera.fieldOfView;
         }
-        _player = player;
+        if (_player != player)
+        {
+            RestoreAnimationUpdates();
+            _player = player;
+            _animator = player.GetComponentInChildren<Animator>();
+            if (_animator != null)
+            {
+                _originalCullingMode = _animator.cullingMode;
+                _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            }
+            foreach (SkinnedMeshRenderer renderer in player.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                _skinUpdates.Add(renderer, renderer.updateWhenOffscreen);
+                renderer.updateWhenOffscreen = true;
+            }
+        }
         // Vanilla still calculates rotation, aiming, input and camera shake.
         // Only replace its trailing third-person position and optical settings.
         gameCamera.transform.position = player.GetEyePoint() +
@@ -74,6 +108,7 @@ internal sealed class FirstPersonCamera
     internal void Restore()
     {
         RestoreVisibility();
+        RestoreAnimationUpdates();
         if (_camera != null)
         {
             _camera.nearClipPlane = _originalNearClip;
@@ -83,6 +118,9 @@ internal sealed class FirstPersonCamera
         _camera = null;
         _skyCamera = null;
         _player = null;
+        _armPlayer = null;
+        _leftArm = null;
+        _rightArm = null;
     }
 
     private void BeforePipelineRender(ScriptableRenderContext context, Camera camera) => BeforeRender(camera);
@@ -91,14 +129,31 @@ internal sealed class FirstPersonCamera
     private void BeforeRender(Camera camera)
     {
         RestoreVisibility();
-        if (camera != _camera || _player == null || !DadsFPPPlugin.HideHead.Value) return;
+        if (camera != _camera || _player == null) return;
+        VisEquipment equipment = _player.GetVisEquipment();
+        if (DadsFPPPlugin.ShowArmsAndWeapons.Value && equipment != null)
+        {
+            if (_armPlayer != _player || _leftArm == null || _rightArm == null)
+            {
+                _armPlayer = _player;
+                _leftArm = FindUpperArm(equipment.m_leftHand);
+                _rightArm = FindUpperArm(equipment.m_rightHand);
+            }
+            // Use the live animated bones. Their held equipment follows the same
+            // pose, so swings, bow draws, blocking and tool use remain animated.
+            Quaternion viewRotation = Quaternion.FromToRotation(_player.transform.forward, camera.transform.forward);
+            Vector3 eyePoint = _player.GetEyePoint();
+            Vector3 offset = camera.transform.TransformDirection(DadsFPPPlugin.ArmViewOffset.Value);
+            PoseArm(_leftArm, eyePoint, viewRotation, offset);
+            PoseArm(_rightArm, eyePoint, viewRotation, offset);
+        }
+        if (!DadsFPPPlugin.HideHead.Value) return;
         _hiddenHead = HeadField.GetValue(_player) as Transform;
         if (_hiddenHead != null)
         {
             _headScale = _hiddenHead.localScale;
             _hiddenHead.localScale = Vector3.zero;
         }
-        VisEquipment equipment = _player.GetVisEquipment();
         if (equipment == null) return;
         foreach (FieldInfo field in AttachmentFields)
         {
@@ -118,12 +173,50 @@ internal sealed class FirstPersonCamera
         if (camera == _camera) RestoreVisibility();
     }
 
+    private static Transform? FindUpperArm(Transform? hand)
+    {
+        for (Transform? bone = hand; bone != null; bone = bone.parent)
+        {
+            string name = bone.name.Replace("_", "").Replace(" ", "").ToLowerInvariant();
+            if (name.Contains("upperarm") || name.EndsWith("leftarm") || name.EndsWith("rightarm") ||
+                name == "arml" || name == "armr" || name == "larm" || name == "rarm")
+                return bone;
+        }
+        return null;
+    }
+
+    private void PoseArm(Transform? arm, Vector3 eyePoint, Quaternion viewRotation, Vector3 offset)
+    {
+        if (arm == null || _armPoses.ContainsKey(arm)) return;
+        _armPoses.Add(arm, new ArmPose(arm));
+        Vector3 position = arm.position;
+        Quaternion rotation = arm.rotation;
+        arm.position = eyePoint + viewRotation * (position - eyePoint) + offset;
+        arm.rotation = viewRotation * rotation;
+    }
+
     private void RestoreVisibility()
     {
+        foreach (KeyValuePair<Transform, ArmPose> entry in _armPoses)
+        {
+            if (entry.Key == null) continue;
+            entry.Key.localPosition = entry.Value.Position;
+            entry.Key.localRotation = entry.Value.Rotation;
+        }
+        _armPoses.Clear();
         if (_hiddenHead != null) _hiddenHead.localScale = _headScale;
         _hiddenHead = null;
         foreach (KeyValuePair<Renderer, bool> entry in _hidden)
             if (entry.Key != null) entry.Key.forceRenderingOff = entry.Value;
         _hidden.Clear();
+    }
+
+    private void RestoreAnimationUpdates()
+    {
+        if (_animator != null) _animator.cullingMode = _originalCullingMode;
+        _animator = null;
+        foreach (KeyValuePair<SkinnedMeshRenderer, bool> entry in _skinUpdates)
+            if (entry.Key != null) entry.Key.updateWhenOffscreen = entry.Value;
+        _skinUpdates.Clear();
     }
 }

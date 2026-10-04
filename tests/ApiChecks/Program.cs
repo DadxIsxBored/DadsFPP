@@ -31,6 +31,13 @@ internal static class Program
         var camera = game.MainModule.GetType("GameCamera");
         Assert(camera.Methods.Any(m => m.Name == "UpdateCamera" && m.Parameters.Count == 1 && m.Parameters[0].ParameterType.FullName == "System.Single" && m.ReturnType.FullName == "System.Void"), "UpdateCamera(float) patch target resolves");
         Assert(FieldMatches("GameCamera", "m_camera", "UnityEngine.Camera") && FieldMatches("GameCamera", "m_freeFly", "System.Boolean"), "Injected camera and free-fly fields match");
-        Assert(!plugin.MainModule.GetMemberReferences().Any(m => m.DeclaringType.FullName == "VisEquipment" && m.Name.StartsWith("m_")), "Private visual attachments are not accessed directly");
+        var equipment = game.MainModule.GetType("VisEquipment");
+        foreach (string name in new[] { "m_leftHand", "m_rightHand" })
+            Assert(FieldMatches("VisEquipment", name, "UnityEngine.Transform") && equipment.Fields.Single(f => f.Name == name).IsPublic,
+                "Public animated hand attachment resolves: " + name);
+        Assert(plugin.MainModule.GetMemberReferences().OfType<FieldReference>()
+            .Where(f => f.DeclaringType.FullName == "VisEquipment")
+            .All(f => equipment.Fields.Any(original => original.Name == f.Name && original.IsPublic)),
+            "Private visual attachments are not accessed directly");
     }
 }

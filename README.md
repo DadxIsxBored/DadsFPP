@@ -6,7 +6,9 @@ Press **F6** to switch between first and third person. First person starts enabl
 
 The Field of View slider starts at Valheim's default **65 degrees** and supports **60–110 degrees**. Changes apply immediately in first person. An existing configured value is retained.
 
-Uses Valheim's existing aiming, movement, combat and camera rotation. Your head, helmet, beard and hair are hidden only while the world camera renders. Your body and equipped items remain present. This uses existing third-person animations rather than new first-person weapon animations.
+Uses Valheim's existing aiming, movement, combat and camera rotation. Your animated arms, weapons and shields follow the first-person view, including when looking up or down. Attacks, bow draws, blocking and tool use retain their game animations. Your head, helmet, beard and hair are hidden only while the world camera renders.
+
+Under Visibility, **Show Arms and Weapons** enables this positioning. **Arm View Offset** adjusts the rendered position in meters: X right, Y up, Z forward. The original arm pose is restored after rendering so gameplay, third person and inventory previews use the normal character pose.
 
 The normal camera is used for inventory previews, death, teleportation, cutscenes, attached seats and free-fly devcommands. Switching back restores camera optics and local visibility. Toggle input is ignored while interacting with menus or text fields.
 
@@ -16,4 +18,4 @@ Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into T
 
 Run `powershell -File build.ps1 -Package`. Override `ValheimManagedPath` and `BepInExCorePath` as environment variables for a different installation. The ZIP and unpacked folder are created under `dist/`; previous artifacts move to `Archive/package-builds/`. Neither folder belongs in Git.
 
-Status: initial 1.0.0 build. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.
+Status: 1.1.0 build. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.

@@ -76,7 +76,7 @@ internal sealed class FirstPersonCamera
         RestoreVisibility();
         if (!DadsFPPPlugin.Enabled.Value || !DadsFPPPlugin.FirstPerson.Value || camera == null ||
             player == null || player.m_eye == null || freeFly || player.IsDead() || player.InCutscene() ||
-            player.IsTeleporting() || InventoryGui.IsVisible() || player.IsAttached())
+            player.IsTeleporting())
         {
             Restore();
             return;

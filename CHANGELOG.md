@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+
+- Keep first person active while inventory and crafting menus are open, while sailing, and in all seats.
+
 ## 1.1.4
 
 - Raise the first-person camera by 20 centimeters, in addition to the configured vertical offset, for upper-torso clearance when looking behind.

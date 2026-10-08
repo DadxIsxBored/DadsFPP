@@ -18,7 +18,7 @@ Damage taken and healing appear in a square at the middle right of the screen. R
 
 The first-person camera is raised 20 centimeters above its previous eye position. Vertical Offset adjusts this raised position, including for existing profiles with a zero offset.
 
-The normal camera is used for inventory previews, death, teleportation, cutscenes, attached seats and free-fly devcommands. Switching back restores camera optics and local visibility. Toggle input is ignored while interacting with menus or text fields.
+First person stays active while inventory and crafting menus are open, while sailing, and in all seats. The normal camera is used for inventory previews, death, teleportation, cutscenes and free-fly devcommands. Switching back restores camera optics and local visibility. Toggle input is ignored while interacting with menus or text fields.
 
 Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into Thunderstore Mod Manager. Install on clients; servers do not need the plugin.
 
@@ -26,4 +26,4 @@ Install the package DLL into `BepInEx/plugins/DadsFPP`, or import the ZIP into T
 
 Run `powershell -File build.ps1 -Package`. Override `ValheimManagedPath` and `BepInExCorePath` as environment variables for a different installation. The ZIP and unpacked folder are created under `dist/`; previous artifacts move to `Archive/package-builds/`. Neither folder belongs in Git.
 
-Status: 1.1.4 build. The camera follows the animated head and refreshes its position before rendering. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.
+Status: 1.1.5 build. The camera follows the animated head and refreshes its position before rendering. Compilation and game API checks are performed locally; in-game camera, equipment and multi-camera verification is required before publishing.
